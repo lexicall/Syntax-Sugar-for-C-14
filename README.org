@@ -1,0 +1,192 @@
+* Syntax Sugar for C++14
+** Introduction
+This is trivial effort to make C++ more "friendly" to programmers. It's compatible with C++14 
+standard. It offers small modifications to C++ language so that you may use them to write
+more short and clean code. Of course this nothing but some pieces of C macros. Just enjoy.
+
+** Syntax Sugars
+*** Modify =auto= to =Var=, and =auto &= to =Var_ref=
+This is only about my apetite. That makes your language more like Javascript or Swift.
+#+BEGIN_SRC cpp
+Var a=10;
+Var_ref b=a;
+#+END_SRC
+*** Easier =for= Syntax 
+You've got three ways to write for to traverse a vector in C++11:
+Using index (C style) :
+#+BEGIN_SRC c++
+vector<int> foo={1,2,3,4,5}; //Initialize
+for(int i=0;i<foo.size();i++){
+...
+}
+#+END_SRC
+Using iterator: 
+#+BEGIN_SRC c++
+vector<int> foo={1,2,3,4,5}; //Initialize
+for(auto iter=foo.begin();iter<foo.end();iter++){
+...
+}
+#+END_SRC
+Using colon: 
+#+BEGIN_SRC c++
+vector<int> foo={1,2,3,4,5}; //Initialize.
+for(auto element : foo){
+    cout<<element<<endl;
+}
+#+END_SRC
+We are still speaking cliche. now we got the new syntax =for_in=:
+
+#+BEGIN_SRC c++
+for_in(<name>, <container>)
+{
+...
+}
+#+END_SRC
+
+For example:
+
+#+BEGIN_SRC c++
+vector<int> foo={1,2,3,4,5}; //Initialize.
+for_in(element, foo){
+    cout<<element<<endl;
+}
+#+END_SRC
+
+See you needn't specifiy the type of that variable element. So that is the simplest 
+=for= grammar ever in C++.
+
+Besides that I implemented =for_through=, in order to eliminate the unfriendly look
+of normal index =for= loop:
+
+#+BEGIN_SRC c++
+for_through(<name>, <lower_bound>, <upper_bound>, <step>)
+{
+...
+}
+#+END_SRC
+
+Those two loops are equivalent:
+#+BEGIN_SRC c++
+for(int i=0; i<100;i+=10){
+...
+}
+
+for_through(i, 0, 100, 10){
+...
+}
+#+END_SRC
+
+Still you needn't specifiy the type. Compiler will deduct that for you.
+
+
+
+*** =elif= and =unless=
+You may write python-style like if-else codes, like:
+
+#+BEGIN_SRC c++
+if(i==1){
+...
+}
+elif(i==2){
+...
+}
+elif(i==3){
+...
+}
+#+END_SRC
+
+And use =unless=:
+ #+BEGIN_SRC c++
+unless(i==10){
+    cout<<"I did not found 10"<<endl;
+}
+ #+END_SRC
+
+
+*** Generic Functions
+Using the new Lambda function implemented in C++14 standard, we may write macros that defines
+generic functions, that:
+1. The type of return values and parameters are automatically deduced.
+2. Could be stored.
+3. Could be nested.
+4. Could be non-content-free.
+
+We write three macros to partially implement them. The first one is =Func=, it can achieve 
+the first three features:
+
+#+BEGIN_SRC C++
+Func(<function-name>, <parameters>){
+...
+};
+#+END_SRC
+
+You will be familiar with this if you are using Lisp, especially scheme.
+For example:
+
+#+BEGIN_SRC c++
+Func(hello_world, Var a, Var b){
+    return a+b;
+};
+#+END_SRC
+
+It could be stored using =std::function=.
+
+Take a look at that nested function:
+
+#+BEGIN_SRC c++
+Func(hello_world){
+    Func(print_hello, Var ch1){
+        Func(print_world){
+             print_hello("hello");
+             cout<<"world"<<endl;
+        }
+     cout<<ch1<<endl;
+    }
+    print_hello("hello");
+}
+#+END_SRC
+
+It can also be nested in normal C++ functions:
+
+#+BEGIN_SRC c++
+int hello_world(){
+    Func(print_hello, Var ch1){
+        Func(print_world){
+             print_hello("hello");
+             cout<<"world"<<endl;
+        }
+     cout<<ch1<<endl;
+    }
+    print_hello("hello");
+}
+#+END_SRC
+
+And that's it. 
+
+The macro =captured_Func= and =ref_Func= could be used in non-content-free mode, thus it
+achieves all four features above. They can capture the variables of their contents automatically.
+The difference is that =ref_Func= captures the reference while =captured_Func= captures a 
+copy of that variable.
+
+#+BEGIN_SRC c++
+Var a=1;
+Var b=2;
+Var c=10;
+captured_Func(plus){
+    c=a+b; //automatic capture.
+};
+captured_Func(); //c will not change.
+#+END_SRC
+
+#+BEGIN_SRC c++
+Var a=1;
+Var b=2;
+Var c=10;
+ref_Func(plus){
+    c=a+b; //automatic capture.
+};
+captured_Func(); //c will be 3.
+#+END_SRC
+
+** License
+Public Domain. Use it whenever, wherever and whatever you want.
