@@ -1,6 +1,3 @@
-/* C++语言扩充（语法糖）*/
-
-
 #ifndef DEF_H
 #define DEF_H
 
